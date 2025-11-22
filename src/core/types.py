@@ -88,3 +88,103 @@ class FileDto(BaseDto):
 
     def dumps(self) -> dict:
         return {"id": str(self.id), "url": self.url}
+
+
+class Otp(NamedTuple):
+    type: OtpType
+    key: str
+    value: str
+
+    @property
+    def msg(self) -> str:
+        return f'{self.type.value}: {self.value}'
+
+
+class JWTConfig(NamedTuple):
+    secret_key: str
+    access_expire: int
+    refresh_expire: int
+    algorithm: str
+
+
+class MinioConfig(NamedTuple):
+    endpoint: str
+    access_key: str
+    secret_key: str
+    private_bucket: str
+    public_bucket: str
+    url_expire_minutes: int
+
+
+class RedisConfig(NamedTuple):
+    host: str
+    port: int
+    password: str
+    db: int
+
+
+class ElasticSearchConfig(NamedTuple):
+    host: str
+    port: int
+    password: str
+
+
+class KaveNegarConfig(NamedTuple):
+    api_key: str
+
+
+class TSMConfig(NamedTuple):
+    username: str
+    password: str
+    sender_number: str
+    ding_sender_numer: str
+
+
+class SMSTemplates(NamedTuple):
+    otp_template: str
+    sign_contact_otp_template: str
+    invitation_to_landlord_template: str
+    invitation_to_tenant_template: str
+    counter_party_signed_template: str
+    counter_party_rejected_template: str
+    edite_requested_template: str
+    custom_payment_template: str
+    wallet_charge_template: str
+    invoice_link_template: str
+
+
+class KenarDivarURLs(NamedTuple):
+    post_info: str
+    user_token: str
+    user_info: str
+
+
+class BaleURLs(NamedTuple):
+    authH_token: str
+    send_otp: str
+
+
+class TsmsURLs(NamedTuple):
+    send_message: str
+
+
+class AmlineURLs(NamedTuple):
+    production_api: str
+    staging_pi: str
+    production_frontend: str
+    staging_frontend: str
+    contract_payments: str
+    contract: str
+
+
+class TelegramURLs(NamedTuple):
+    send_message: str
+
+
+@dataclass
+class FinnotechConfig:
+    uri: str
+    client_id: str
+    secret: str
+    national_code: str
+    scopes: str
