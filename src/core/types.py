@@ -170,7 +170,7 @@ class TsmsURLs(NamedTuple):
 
 class AmlineURLs(NamedTuple):
     production_api: str
-    staging_pi: str
+    staging_api: str
     production_frontend: str
     staging_frontend: str
     contract_payments: str
