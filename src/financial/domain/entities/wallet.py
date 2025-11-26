@@ -5,7 +5,7 @@ from core.base.base_entity import BaseEntity
 from core.excepions import ValidationException
 from core.helpers import get_now
 from core.translates import validation_trans
-from financial.domain.enums import WalletStatus
+from financial.domain.enums import WalletSatuts
 
 class Wallet(BaseEntity):
     id :int
@@ -14,7 +14,7 @@ class Wallet(BaseEntity):
     created_by :int
     updated_by :int |None
     bank_account_id :int |None
-    status:WalletStatus
+    status:WalletSatuts
     created_at :datetime|None
     updated_at :datetime|None
     deleted_at :datetime|None
@@ -35,7 +35,7 @@ class Wallet(BaseEntity):
         self.user_id =user_id
         self.created_by = created_by
         self.updated_by = updated_by
-        self.status = WalletStatus.ACTIVE
+        self.status = WalletSatuts.ACTIVE
         self.bank_account_id = bank_account_id
         self.created_at = created_at
         self.updated_at = updated_at
@@ -73,6 +73,6 @@ class Wallet(BaseEntity):
             created_by = str(self.created_at),
             updated_by = str(self.updated_by) ,
             bank_account_id = str(self.bank_account_id),
-            status = WalletStatus.resolve(self.status)
+            status = WalletSatuts.resolve(self.status)
             **kwargs, 
         )

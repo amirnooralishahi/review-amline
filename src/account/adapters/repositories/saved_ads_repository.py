@@ -1,5 +1,5 @@
 import abc
-from abc
+import abc
 from typing import Type
 
 from httpx import delete
