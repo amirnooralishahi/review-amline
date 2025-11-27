@@ -1,12 +1,62 @@
-from account.domain.entities.user import User
-from contract.domain.entities.contract_party import ContractParty
-from contract.domain.entities.contract_step import ContractStep
-from contract.domain.entities.property_rent_contract import PropertyRentContract
 from contract.domain.enums import (
     ContractStatus,
     PartyType,
     PRContractState,
     PRContractStep,
 )
-from contract.domain.prcontract.prcontract_step_manager import PRContractStepManger
-from contract.domain.types import ContractOwner 
+class PRContractStepManager : 
+    def get_contract_state(
+        self,completed_steps:list|set , status : ContractStatus,owner_party_type:PartyType
+    )->PRContractState  : 
+        if status ==ContractStatus.ADMIN_REJECTED : 
+            return PRContractState.ADMIN_REJECTED 
+        if status == ContractStatus.PARTY_REJECTED and owner_party_type==PartyType.TENANT: 
+            return PRContractState.LANDLORD_REJECTED 
+        if status == ContractStatus.PARTY_REJECTED  and owner_party_type == PartyType.LANDLORD: 
+            return PRContractState.LANDLORD_REJECTED
+        
+        if status == ContractStatus.EDIT_REQUESTED and owner_party_type == PartyType.TENANT : 
+            return PRContractState.LANDLORD_EDIT_REQEUEST 
+        if status == ContractStatus.EDIT_REQUESTED and owner_party_type == PartyType.LANDLORD : 
+            return PRContractState.TENANT_EDIT_REQUEST 
+        
+
+        steps_types = {PRContractStep.resolve(step) for step in completed_steps}
+        
+        if self.tracking_code_delivered_steps.issubset(steps_types):
+            pass 
+
+
+    @property 
+    def tracking_code_delivered_steps(self)->set[PRContractStep]: 
+        return self.required_steps_for_delivering_tracking | {PRContractStep.TRACKING_CODE_DELIVERED}
+    @property 
+    def required_steps_for_delivering_tracking_code(self)->set[PRContractStep]: 
+        return self.tracking_code_requested_steps
+    @property 
+    def traking_code_requested_steps(self)-> set[PRContractStep]: 
+        return self.required_steps_for_requesting_tracking_code | {PRContractStep.TRACKING_CODE_REQUESTED}
+    @property 
+    def required_steps_for_requesting_tracking_code(self)->set[PRContractStep]: 
+        return self.admin_approved_steps
+    @property 
+    def admin_approved_steps(self)->set[PRContractStep]: 
+        return self.required_steps_for_admin_approve | {PRContractStep.ADMIN_APPROVE}
+    @property 
+    def required_stps_for_admin_approve (self) ->set[PRContractStep]: 
+        return self.required_steps_for_paying_commission | { 
+                                                            PRContractStep.LANDLORD_COMMISSION , 
+                                                            PRContractStep.TENANT_COMMISSION}
+    @property
+    def required_steps_for_paying_commission(self)->set[PRContractStep]: 
+        return self.tenant_signed_steps_landlord_owner 
+
+    @property 
+    def tenant_signed_steps_landlord_owner(self)->set[PRContractStep] : 
+        return self.required_steps_for_tenant_signature_landlord_owner |{PRContractStep.TENANT_SIGNATURE} 
+    @property 
+    def required_steps_for_tenant_signature_landlord_owner(self)->set[PRContractStep]: 
+        return self.landlord_signed_steps_landlord_owner |{PRContractStep.TENANT_INFORMATION}
+    @property 
+    def landlord_signed_steps_landlord_owner(self)->set[PRContractStep]: 
+        return self.required_steps_for_landlord_signature_landlord_owner |{PRContractStep.LANDLORD_SIGNATURE} 
