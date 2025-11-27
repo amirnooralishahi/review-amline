@@ -10,4 +10,3 @@ from contract.domain.enums import (
 )
 from contract.domain.prcontract.prcontract_step_manager import PRContractStepManger
 from contract.domain.types import ContractOwner 
-from contract.service_layer.exceptions import USerIsNotContractPartyException 
