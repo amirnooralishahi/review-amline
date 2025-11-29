@@ -10,4 +10,14 @@ from contract.domain.enums import (
 )
 from contract.domain.prcontract.prcontract_step_manager import PRContractStepManager
 from contract.domain.types import ContractOwner
-from contract.service_layer.exceptions import USerIsNotContractPartyException 
+from contract.service_layer.exceptions import UserIsNotContractPartyException
+from core.translates import perm_trans 
+from core.translates.conflict_exception import ConflictExcTrans 
+
+
+class  PRContractService :
+    def __init__(self,step_manager :PRContractStepManager= PRContractStepManager()): 
+        self.step_manager = step_manager 
+    
+    def get_contract_state( 
+        sel):pass 
