@@ -134,3 +134,30 @@ class PropertyRentContract(BaseEntity):
             value=self.tracking_code_value,
             generations_date=self.tracking_code_generation_date,
         )
+
+    @tracking_code.setter
+    def tracking_code(self, tracking_code: TrackingCode) -> None:
+        if (
+            tracking_code.status == enums.TrackingCodeStatus.DELIVERED
+            and not tracking_code.value
+        ):
+            raise ValidationException(
+                ValidationExcTrans.tracking_code_value_cannot_be_null
+            )
+
+        if tracking_code.status == enums.TrackingCodeStatus.DELIVERED:
+            self.trackinig_code_status = tracking_code.status
+            self.tracking_code_value = tracking_code.valie
+            self.tracking_code_generation_date = (
+                tracking_code.generation_date or dt.date.today()
+            )
+        else:
+            self.tracking_status = tracking_code.status
+            self.tracking_code_value = None
+            self.tracking_code_generation_date = None
+
+    @property
+    def owner(self) -> ContractOwner:
+        return ContractOwner(
+            user_id=self.owner_user_id, party_type=self.owner_party_type
+        )
