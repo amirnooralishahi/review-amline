@@ -178,7 +178,7 @@ class PRContractPDFGeneratorServiceImpl(PRContractPDFGeneratorService):
         self.service_url = service_url
         self.uow = uow
 
-    def _generate_pd(self, contract_id: int) -> bytes:
+    def _generate_pdf(self, contract_id: int) -> bytes:
         contract = self._get_contract(contract_id)
         property = self._get_property(contract["property_id"])
         clauses = self._get_clauses(contract_id)

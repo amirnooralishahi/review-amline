@@ -9,7 +9,7 @@ from contract.domain.prcontract import (
     PRcContractCommissionServce,
     PRcountractService,
 )
-from contract.domain.prcontract.prcontract_pdf_generator_service import (
+from contract.domain.prcontract.prcontract_pdf_generato_service import (
     PRContractPDFGeneratorService,
     PRContractPDFGeneratorServiceImpl,
 
