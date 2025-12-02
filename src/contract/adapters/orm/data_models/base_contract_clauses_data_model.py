@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from core.database import SQLACLHEMY_REGISTRY
 
-base_contracct_clauses = sa.table(
+base_contract_clauses = sa.table(
     "base_contract_lauses",
     sa.Column("id", sa.BigInteger, primary_key=True),
     sa.Column("contract_type", sa.String, nullable=False),
