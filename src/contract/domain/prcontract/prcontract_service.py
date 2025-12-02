@@ -11,7 +11,7 @@ from contract.domain.enums import (
 from contract.domain.prcontract.prcontract_step_manager import PRContractStepManager
 from contract.domain.types import ContractOwner
 from contract.service_layer.exceptions import UserIsNotContractPartyException
-from core.excepions import ConflictException ,PermissionException
+from core.excepions import ConflictException, PermissionException
 from core.translates import perm_trans
 from core.translates.conflict_exception import ConflictExcTrans
 
@@ -38,16 +38,151 @@ class PRContractService:
         completed_steps: list[ContractStep] = list(),
     ) -> None:
 
-        if prc.statusin [ContractStatus.ADMIN_REJECTED,ContractStatus.PARTY_REJECTED,ContractStatus.EDIT_REQUESTED]: 
-            raise PermissionException( 
-                                      perm_trans.contract_is_not_editable , 
-                                      context={'message': f'contract is in {prc.status} state'})
-        
-        if prc.status == ContractStatus.DRAFT  and prc.owner_user_id !=party.user_id  :
+        if prc.statusin[
+            ContractStatus.ADMIN_REJECTED,
+            ContractStatus.PARTY_REJECTED,
+            ContractStatus.EDIT_REQUESTED,
+        ]:
+            raise PermissionException(
+                perm_trans.contract_is_not_editable,
+                context={"message": f"contract is in {prc.status} state"},
+            )
+
+        if prc.status == ContractStatus.DRAFT and prc.owner_user_id != party.user_id:
             raise PermissionException(perm_trans.party_is_not_contract_owner)
 
-        stpes_types= {PRContractStep.resolve(step.type) for step in completed_steps}
+        steps_types = {PRContractStep.resolve(step.type) for step in completed_steps}
+
+        if step in [PRContractStep.LANDLORD_REJECTED, PRContractStep.TENANTE_REJECTED]:
+            if prc == party.user_id:
+                raise PermissionException(
+                    perm_trans.contract_owner_cannot_reject_contract
+                )
+            state = self.get_contract_state(
+                steps_types, prc.status, prc.owner.party_type
+            )
+        if step in [
+            PRContractStep.LANDLORD_EDIT_REQUEST,
+            PRContractStep.TENANT_EDIT_REQUEST,
+        ]:
+            self.validate_party_has_perm_for_edit_request(prc, party, state)
+        if (
+            step in self.step_manager.start_steps
+            and prc.status != PRContractState.DRAFT
+        ):
+            raise PermissionException(perm_trans.contract_is_not_editable)
+
+        if step in self.step_manager.start_steps and not self.party_is_owner(
+            party, prc.owner
+        ):
+            raise PermissionException(perm_trans.party_is_not_contract_owner)
+
+        if step is PRContractStep.TENANT_INFORMATION:
+            self.party_has_perm_toupdate_tenant_information(prc, party, state)
+        if step is PRContractStep.TENANT_APPROVE:
+            self.party_ahs_per_to_approve(party, state, steps_types)
+
+        if step is PRContractStep.LANDLORD_INFORMATION:
+            self.party_has_perm_to_update_landlord_information(prc, party, state)
+
+        if step is PRContractStep.LANDLORD_SIGNATURE:
+            self.landlord_has_perm_to_sign(prc, party, steps_types)
+
+        if step in PRContractStep.TENANT_SIGNATURE:
+            self.tenant_has_perm_to_sig(prc, party, steps_types)
+
+        if step in self.step_manager.property_steps:
+            self.party_has_perm_update_property_informatioN(prc, party, state)
+
+        if step in [PRContractStep.LANDLORD_REJECTED, PRContractStep.TENANTE_REJECTED]:
+            self.party_has_perm_to_reject(prc, party)
+
+        if step is PRContractStep.TENANT_COMMISSION:
+            self.party_has_perm_to_pay_tenant_commission(prc, party, steps_types)
+
+        if step is PRContractStep.LANDLORD_COMMISSION:
+            self.party_has_perm_to_pay_landlord_commission(prc, party, steps_types)
+
+        if step is PRContractStep.RENT_PAYMENT:
+            self.party_has_perm_to_add_rent_payent(prc, party, steps_types)
+
+        if step is PRContractStep.DEPOSIT_PAYMENT:
+            self.party_has_perm_to_add_deposit_payment(prc, party, steps_types)
+
+    def party_has_perm_to_add_deposit_payment(
+        self,
+        prc: PropertyRentContract,
+        party: ContractParty,
+        steps: set[PRContractStep],
+    ) -> None:
+        if prc.status != ContractStatus.DRAFT:
+            raise PermissionException(perm_trans.contract_is_not_editable)
+
+        if PRContractStep.RENT_PAYMENT in steps:
+            raise PermissionException(perm_trans.rent_payment_already_finalized)
+
+        if prc.owner_user_id != party.user_id:
+            raise PermissionException(perm_trans.party_is_not_contract_owner)
+
+    def party_has_perm_to_update_property_information(
+        self, prc: PropertyRentContract, party: ContractParty, steps: PRContractState
+    ) -> None:
+        if not self.party_is_landlord(party):
+            raise PermissionException(perm_trans.party_is_not_landlord)
+
+        if self.owner_is_landlord(prc.owner) and not steps.issuperset(
+            self.step_manager.required_steps_for_tenant_signature__landlord_owner
+        ):
+            raise PermissionException(perm_trans.missing_required_steps)
+
+        if self.owner_is_tenant(prc.owner) and not steps.issuperset(
+            self.step_manager.required_steps_for_tenant_signature__tenant_owner
+        ):
+            raise PermissionException(perm_trans.missing_required_steps)
+
+    def landlord_has_perm_to_sign(
+        self,
+        prc: PropertyRentContract,
+        party: ContractParty,
+        steps: set[PRContractStep],
+    ) -> None:
+        if not self.party_is_landlord(party):
+            raise PermissionException(perm_trans.party_is_not_landlord)
+        if self.owner_is_landlord(prc.owner) and not steps.issuperset(
+            self.step_manager.required_steps_for_landlord_signature__landlord_owner
+        ):
+            raise PermissionException(perm_trans.missing_required_steps)
+
+        if self.owner_is_tenant(prc.owner) and not steps.issuperset(
+            self.step_manager.required_steps_for_landlord_signature__tenant_owner
+        ):
+            raise PermissionException(perm_trans.missing_required_steps)
+
+    
+    def party_has_perm_to_update_tenant_information( 
+                                                    self,prc: PropertyRentContract, 
+                                                    party:ContractParty, state: PRContractState)->None:
+        if not self.party_is_tenant(party) : 
+            raise PermissionException(perm_trans.party_is_not_tenant)
         
-        if step in [PRContractStep.LANDLORD_REJECTED,PRContractStep.TENANTE_REJECTED] : 
-            if prc.owner.user_id == party.user_id : 
-                
+        if self.owner_is_landlord(prc.owner) and state != PRContractState.PENDING_TENANT_INFORMATION: 
+            raise PermissionException(perm_trans.contract_is_not_editable) 
+        
+        if self.owner_is_tennt(prc.owner) and state != PRContractState.DRAFT : 
+            raise PermissionException( perm_trans.contract_is_not_editable)
+    
+    def party_has_perm_to_approve( 
+                                  self,party: ContractParty , state: PRContractState, steps:set[PRContractStep])->None: 
+        if not self.party_is_tenant(party) :
+            raise PermissionException(perm_trans.party_is_not_tenant)
+        
+        if state != PRContractState.PENDING_TENANT_APPROVAL: 
+            raise PermissionException(perm_trans.contract_is_not_editable)
+        
+        if not steps.issuperset(self.step_manager.required_steps_for_tenant_approve): 
+            raise PermissionException(perm_trans.missing_required_steps)
+    
+    def party_has_perm_to_update_landlord_information( 
+        self,prc:PropertyRentContract,party: ContractParty):
+        pass 
+        

@@ -35,7 +35,7 @@ class PermExcTrans :
     rejected_contract_cannot_changes= "قرارداد رد شده قابل تغییر نیست"
     party_is_not_tenant="طرف قرار داد مستاجر نیست"
     party_is_not_landlord='طرف قرارداد مالک نیست'
-    missing_required_stes="عدم تکمیل مراحل مورد نیاز"
+    missing_required_steps="عدم تکمیل مراحل مورد نیاز"
     user_is_not_payment_payer = "شما پرداخت کننده این پرداخت نیستید"
     user_is_not_payment_payee='شما دریافت کننده این پرداخت نیستید'
     rent_payment_already_finalized=" پرداخت های رهن قبلا نهایی شده است"
