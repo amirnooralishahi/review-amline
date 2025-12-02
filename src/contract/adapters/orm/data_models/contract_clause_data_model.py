@@ -2,7 +2,7 @@ import sqlalchemy as sa
 
 from core.database import SQLALCHEMY_REGISTRY
 
-contract_clausess = (
+contract_clauses = (
     sa.Table(
         "contract_clauses",
         SQLALCHEMY_REGISTRY.metadata,
