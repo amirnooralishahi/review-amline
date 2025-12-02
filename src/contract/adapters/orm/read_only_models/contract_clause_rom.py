@@ -30,7 +30,7 @@ class ConractClausesROM(BaseROM):
             "body": self.body,
         }
     
-    contract_clauses_rom = sa.Table( 
+contract_clauses_rom = sa.Table( 
     'contract_clauses' , 
     SQLALCHEMY_REGISTRY.metadata , 
     sa.Column( 'id',sa.BigInteger,primary_key=True) ,

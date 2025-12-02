@@ -24,7 +24,7 @@ class ContractPartyROM(BaseROM):
         }
 
 
-contrac_parties_rom = sa.Table(
+contract_parties_rom = sa.Table(
     "contract_pparties",
     SQLALCHEMY_READONLY_REGISTRY.metadata,
     sa.Column("id", sa.Integer, primary_key=True),
