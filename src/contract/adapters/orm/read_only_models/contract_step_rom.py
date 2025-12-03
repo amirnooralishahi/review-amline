@@ -7,7 +7,7 @@ from core.base.base_read_only_model import BaseROM
 from core.database import SQLALCHEMY_READONLY_REGISTRY
 
 
-class ContracctStepROM(BaseROM):
+class ContractStepROM(BaseROM):
     id: int
     contract_id: int
     type: PRContractStep
