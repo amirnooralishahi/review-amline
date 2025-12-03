@@ -24,7 +24,7 @@ class UserROM(BaseROM):
         )
 
 
-user_rom = sa.Table(
+users_rom = sa.Table(
     "users",
     sa.Column("id", sa.BigInteger, primary_key=True),
     sa.Column("mobile", sa.String, nullable=False),
