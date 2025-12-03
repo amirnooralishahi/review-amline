@@ -6,4 +6,6 @@ from .contract_payments_roms import (
     cheque_rom,
     contract_payments_rom,
 )
-from .contract_rom import ContractROM , contracts_rom 
+from .contract_rom import ContractROM, contracts_rom
+from .contract_step_rom import ContractStepROM, contract_step_rom
+from .prcontract_rom import PRContractROM, prcontracts_rom
