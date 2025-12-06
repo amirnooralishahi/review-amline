@@ -26,6 +26,7 @@ class UserROM(BaseROM):
 
 users_rom = sa.Table(
     "users",
+    SQLALCHEMY_REGISTRY.metadata,
     sa.Column("id", sa.BigInteger, primary_key=True),
     sa.Column("mobile", sa.String, nullable=False),
     sa.Column('first_name',sa.String) , 
